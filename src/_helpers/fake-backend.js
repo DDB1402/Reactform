@@ -4,12 +4,16 @@ export function configureFakeBackend() {
     // array in local storage for user records
     let users = JSON.parse(localStorage.getItem('users')) || [{ 
         id: 1,
-        title: 'Mr',
         firstName: 'Joe',
+        midName: 'blah',
         lastName: 'Bloggs',
-        email: 'joe@bloggs.com',
-        role: Role.User,
-        password: 'joe123'
+        identification: '123456789',
+        sex: "Nam",
+        job: "Y tá",
+        degree: "Đại học",
+        religion: "Không",
+        age: 49,
+        village: 1,
     }];
 
     // monkey patch fetch to setup fake backend
@@ -54,14 +58,13 @@ export function configureFakeBackend() {
             function createUser() {
                 const user = body();
 
-                if (users.find(x => x.email === user.email)) {
-                    return error(`User with the email ${user.email} already exists`);
+                if (users.find(x => x.identification === user.email)) {
+                    return error(`People with the identification ${user.identification} already exists`);
                 }
 
                 // assign user id and a few other properties then save
                 user.id = newUserId();
                 user.dateCreated = new Date().toISOString();
-                delete user.confirmPassword;
                 users.push(user);
                 localStorage.setItem('users', JSON.stringify(users));
 
@@ -72,12 +75,12 @@ export function configureFakeBackend() {
                 let params = body();
                 let user = users.find(x => x.id === idFromUrl());
 
-                // only update password if included
-                if (!params.password) {
-                    delete params.password;
-                }
-                // don't save confirm password
-                delete params.confirmPassword;
+                    // // only update password if included
+                    // if (!params.password) {
+                    //     delete params.password;
+                    // }
+                    // // don't save confirm password
+                    // delete params.confirmPassword;
 
                 // update and save user
                 Object.assign(user, params);

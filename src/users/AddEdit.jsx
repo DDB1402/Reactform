@@ -1,148 +1,229 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useForm } from "react-hook-form";
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import { userService, alertService } from '@/_services';
+import { userService, alertService } from '../_services';
 
 function AddEdit({ history, match }) {
-    const { id } = match.params;
-    const isAddMode = !id;
-    
-    // form validation rules 
-    const validationSchema = Yup.object().shape({
-        title: Yup.string()
-            .required('Title is required'),
-        firstName: Yup.string()
-            .required('First Name is required'),
-        lastName: Yup.string()
-            .required('Last Name is required'),
-        email: Yup.string()
-            .email('Email is invalid')
-            .required('Email is required'),
-        role: Yup.string()
-            .required('Role is required'),
-        password: Yup.string()
-            .transform(x => x === '' ? undefined : x)
-            .concat(isAddMode ? Yup.string().required('Password is required') : null)
-            .min(6, 'Password must be at least 6 characters'),
-        confirmPassword: Yup.string()
-            .transform(x => x === '' ? undefined : x)
-            .when('password', (password, schema) => {
-                if (password || isAddMode) return schema.required('Confirm Password is required');
-            })
-            .oneOf([Yup.ref('password')], 'Passwords must match')
+  const { id } = match.params;
+  const isAddMode = !id;
+
+  // form validation rules
+  const validationSchema = Yup.object().shape({
+    firstName: Yup.string().required('First Name is required'),
+    midName: Yup.string().required('First Name is required'),
+    lastName: Yup.string().required('Last Name is required'), 
+    sex: Yup.string().required('Sex is required'),
+    job: Yup.string().required('Job is required'),
+    village: Yup.string().required('Village is required'),
+    religion: Yup.string().required('Religion is required'),
+    age: Yup.string().required('Age is required'),
+    degree: Yup.string().required('Degree is required'),
+    identification: Yup.string()
+      .required('Identification is required')
+      .matches(/^[0-9]+$/, "Must be only digits")
+      .test(
+        'len',
+        'Identification must be 9 or 12 characters',
+        (val) => val.length === 9 || val.length === 12
+      ),
+  });
+
+  // functions to build form returned by useForm() hook
+  const { register, handleSubmit, reset, setValue, errors, formState } =
+    useForm({
+      resolver: yupResolver(validationSchema),
     });
 
-    // functions to build form returned by useForm() hook
-    const { register, handleSubmit, reset, setValue, errors, formState } = useForm({
-        resolver: yupResolver(validationSchema)
-    });
+  function onSubmit(data) {
+    return isAddMode ? createUser(data) : updateUser(id, data);
+  }
 
-    function onSubmit(data) {
-        return isAddMode
-            ? createUser(data)
-            : updateUser(id, data);
+  function createUser(data) {
+    return userService
+      .create(data)
+      .then(() => {
+        alertService.success('User added', { keepAfterRouteChange: true });
+        history.push('.');
+      })
+      .catch(alertService.error);
+  }
+
+  function updateUser(id, data) {
+    return userService
+      .update(id, data)
+      .then(() => {
+        alertService.success('User updated', { keepAfterRouteChange: true });
+        history.push('..');
+      })
+      .catch(alertService.error);
+  }
+
+  useEffect(() => {
+    if (!isAddMode) {
+      // get user and set form fields
+      userService.getById(id).then((user) => {
+        const fields = ['firstName','midName', 'lastName', 'sex', 'identification', 'age'];
+        fields.forEach((field) => setValue(field, user[field]));
+      });
     }
+  }, []);
 
-    function createUser(data) {
-        return userService.create(data)
-            .then(() => {
-                alertService.success('User added', { keepAfterRouteChange: true });
-                history.push('.');
-            })
-            .catch(alertService.error);
-    }
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <h1>{isAddMode ? 'Add User' : 'Edit User'}</h1>
+      <div className="form-row">
+        <div className="form-group col-3">
+          <label>First Name</label>
+          <input
+            name="firstName"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.firstName?.message}</div>
+        </div>
+        <div className="form-group col-4">
+          <label>Mid Name</label>
+          <input
+            name="midName"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.midName ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.midName?.message}</div>
+        </div>
+        <div className="form-group col-3">
+          <label>Last Name</label>
+          <input
+            name="lastName"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.lastName?.message}</div>
+        </div>
+      </div>
 
-    function updateUser(id, data) {
-        return userService.update(id, data)
-            .then(() => {
-                alertService.success('User updated', { keepAfterRouteChange: true });
-                history.push('..');
-            })
-            .catch(alertService.error);
-    }
-
-    useEffect(() => {
-        if (!isAddMode) {
-            // get user and set form fields
-            userService.getById(id).then(user => {
-                const fields = ['title', 'firstName', 'lastName', 'email', 'role'];
-                fields.forEach(field => setValue(field, user[field]));
-            });
-        }
-    }, []);
-
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
-            <h1>{isAddMode ? 'Add User' : 'Edit User'}</h1>
-            <div className="form-row">
-                <div className="form-group col">
-                    <label>Title</label>
-                    <select name="title" ref={register} className={`form-control ${errors.title ? 'is-invalid' : ''}`}>
-                        <option value=""></option>
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
-                        <option value="Ms">Ms</option>
-                    </select>
-                    <div className="invalid-feedback">{errors.title?.message}</div>
-                </div>
-                <div className="form-group col-5">
-                    <label>First Name</label>
-                    <input name="firstName" type="text" ref={register} className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} />
-                    <div className="invalid-feedback">{errors.firstName?.message}</div>
-                </div>
-                <div className="form-group col-5">
-                    <label>Last Name</label>
-                    <input name="lastName" type="text" ref={register} className={`form-control ${errors.lastName ? 'is-invalid' : ''}`} />
-                    <div className="invalid-feedback">{errors.lastName?.message}</div>
-                </div>
-            </div>
-            <div className="form-row">
-                <div className="form-group col-7">
-                    <label>Email</label>
-                    <input name="email" type="text" ref={register} className={`form-control ${errors.email ? 'is-invalid' : ''}`} />
-                    <div className="invalid-feedback">{errors.email?.message}</div>
-                </div>
-                <div className="form-group col">
-                    <label>Role</label>
-                    <select name="role" ref={register} className={`form-control ${errors.role ? 'is-invalid' : ''}`}>
-                        <option value=""></option>
-                        <option value="User">User</option>
-                        <option value="Admin">Admin</option>
-                    </select>
-                    <div className="invalid-feedback">{errors.role?.message}</div>
-                </div>
-            </div>
-            {!isAddMode &&
-                <div>
-                    <h3 className="pt-3">Change Password</h3>
-                    <p>Leave blank to keep the same password</p>
-                </div>
-            }
-            <div className="form-row">
-                <div className="form-group col">
-                    <label>Password</label>
-                    <input name="password" type="password" ref={register} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
-                    <div className="invalid-feedback">{errors.password?.message}</div>
-                </div>
-                <div className="form-group col">
-                    <label>Confirm Password</label>
-                    <input name="confirmPassword" type="password" ref={register} className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`} />
-                    <div className="invalid-feedback">{errors.confirmPassword?.message}</div>
-                </div>
-            </div>
-            <div className="form-group">
-                <button type="submit" disabled={formState.isSubmitting} className="btn btn-primary">
-                    {formState.isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                    Save
-                </button>
-                <Link to={isAddMode ? '.' : '..'} className="btn btn-link">Cancel</Link>
-            </div>
-        </form>
-    );
+      <div className="form-row">
+        <div className="form-group col">
+          <label>Sex</label>
+          <select
+            name="sex"
+            ref={register}
+            className={`form-control ${errors.sex ? 'is-invalid' : ''}`}
+          >
+            <option value=""></option>
+            <option value="Nam">Nam</option>
+            <option value="Nu">Nữ</option>
+          </select>
+          <div className="invalid-feedback">{errors.sex?.message}</div>
+        </div>
+        <div className="form-group col">
+          <label>Age</label>
+          <input
+            name="age"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.age ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.age?.message}</div>
+        </div>
+        <div className="form-group col-5">
+          <label>Religion</label>
+          <select
+            name="religion"
+            ref={register}
+            className={`form-control ${errors.religion ? 'is-invalid' : ''}`}
+          >
+            <option value=""></option>
+            <option value="Không">Không</option>
+            <option value="Phật giáo">Phật giáo</option>
+            <option value="Thiên chúa giáo">Thiên chúa giáo</option>
+            <option value="Hồi giáo">Hồi giáo</option>
+            <option value="Ấn độ giáo">Ấn độ giáo</option>
+            <option value="Cao đài giáo">Cao đài giáo</option>
+            <option value="Khác">Khác</option>
+          </select>
+          <div className="invalid-feedback">{errors.religion?.message}</div>
+        </div>
+      </div>
+      {!isAddMode && (
+        <div>
+          <h3 className="pt-3">Change Password</h3>
+          <p>Leave blank to keep the same password</p>
+        </div>
+      )}
+      <div className="form-row">
+        <div className="form-group col">
+          <label>Identification</label>
+          <input
+            name="identification"
+            type="identification"
+            ref={register}
+            className={`form-control ${
+              errors.identification ? 'is-invalid' : ''
+            }`}
+          />
+          <div className="invalid-feedback">
+            {errors.identification?.message}
+          </div>
+        </div>
+        <div className="form-group col-4">
+          <label>Village</label>
+          <select
+            name="village"
+            ref={register}
+            className={`form-control ${errors.village ? 'is-invalid' : ''}`}
+          >
+            <option value=""></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+          <div className="invalid-feedback">{errors.village?.message}</div>
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group col">
+          <label>Degree</label>
+          <input
+            name="degree"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.degree ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.degree?.message}</div>
+        </div>
+        <div className="form-group col">
+          <label>Job</label>
+          <input
+            name="job"
+            type="text"
+            ref={register}
+            className={`form-control ${errors.job ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.job?.message}</div>
+        </div>
+      </div>
+      <div className="form-group">
+        <button
+          type="submit"
+          disabled={formState.isSubmitting}
+          className="btn btn-primary"
+        >
+          {formState.isSubmitting && (
+            <span className="spinner-border spinner-border-sm mr-1"></span>
+          )}
+          Save
+        </button>
+        <Link to={isAddMode ? '.' : '..'} className="btn btn-link">
+          Cancel
+        </Link>
+      </div>
+    </form>
+  );
 }
 
 export { AddEdit };
