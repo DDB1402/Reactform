@@ -1,7 +1,7 @@
 import config from 'config';
 import { fetchWrapper } from '@/_helpers';
 
-const baseUrl = `${config.apiUrl}/users`;
+const baseUrl = `http://127.0.0.1:8000/api/add_citizen`;
 
 export const userService = {
     getAll,

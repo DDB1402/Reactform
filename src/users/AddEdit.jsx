@@ -12,9 +12,9 @@ function AddEdit({ history, match }) {
 
   // form validation rules
   const validationSchema = Yup.object().shape({
-    firstName: Yup.string().required('First Name is required'),
-    midName: Yup.string().required('First Name is required'),
-    lastName: Yup.string().required('Last Name is required'), 
+    firstname: Yup.string().required('First Name is required'),
+    midname: Yup.string().required('First Name is required'),
+    lastname: Yup.string().required('Last Name is required'), 
     sex: Yup.string().required('Sex is required'),
     job: Yup.string().required('Job is required'),
     village: Yup.string().required('Village is required'),
@@ -38,6 +38,7 @@ function AddEdit({ history, match }) {
     });
 
   function onSubmit(data) {
+    console.log(data);
     return isAddMode ? createUser(data) : updateUser(id, data);
   }
 
@@ -65,7 +66,7 @@ function AddEdit({ history, match }) {
     if (!isAddMode) {
       // get user and set form fields
       userService.getById(id).then((user) => {
-        const fields = ['firstName','midName', 'lastName', 'sex', 'identification', 'age'];
+        const fields = ['firstname','midname', 'lastname', 'sex', 'identification', 'age'];
         fields.forEach((field) => setValue(field, user[field]));
       });
     }
@@ -78,32 +79,32 @@ function AddEdit({ history, match }) {
         <div className="form-group col-3">
           <label>First Name</label>
           <input
-            name="firstName"
+            name="firstname"
             type="text"
             ref={register}
-            className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+            className={`form-control ${errors.firstname ? 'is-invalid' : ''}`}
           />
-          <div className="invalid-feedback">{errors.firstName?.message}</div>
+          <div className="invalid-feedback">{errors.firstname?.message}</div>
         </div>
         <div className="form-group col-4">
           <label>Mid Name</label>
           <input
-            name="midName"
+            name="midname"
             type="text"
             ref={register}
-            className={`form-control ${errors.midName ? 'is-invalid' : ''}`}
+            className={`form-control ${errors.midname ? 'is-invalid' : ''}`}
           />
-          <div className="invalid-feedback">{errors.midName?.message}</div>
+          <div className="invalid-feedback">{errors.midname?.message}</div>
         </div>
         <div className="form-group col-3">
           <label>Last Name</label>
           <input
-            name="lastName"
+            name="lastname"
             type="text"
             ref={register}
-            className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+            className={`form-control ${errors.lastname ? 'is-invalid' : ''}`}
           />
-          <div className="invalid-feedback">{errors.lastName?.message}</div>
+          <div className="invalid-feedback">{errors.lastname?.message}</div>
         </div>
       </div>
 
@@ -201,6 +202,16 @@ function AddEdit({ history, match }) {
           <input
             name="job"
             type="text"
+            ref={register}
+            className={`form-control ${errors.job ? 'is-invalid' : ''}`}
+          />
+          <div className="invalid-feedback">{errors.job?.message}</div>
+        </div>
+        <div className="form-group col">
+          <label>Date-Of-Birth</label>
+          <input
+            name="date_of_birth"
+            type="date"
             ref={register}
             className={`form-control ${errors.job ? 'is-invalid' : ''}`}
           />
