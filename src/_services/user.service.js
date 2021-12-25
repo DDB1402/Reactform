@@ -2,14 +2,20 @@ import config from 'config';
 import { fetchWrapper } from '@/_helpers';
 
 const baseUrl = `http://127.0.0.1:8000/api/add_citizen`;
+const villageUrl = `http://127.0.0.1:8000/api/add_citizen_page/`
 
 export const userService = {
     getAll,
     getById,
     create,
     update,
-    delete: _delete
+    delete: _delete,
+    getVillage
 };
+
+function getVillage() {
+    return fetchWrapper.get(villageUrl);
+}
 
 function getAll() {
     return fetchWrapper.get(baseUrl);

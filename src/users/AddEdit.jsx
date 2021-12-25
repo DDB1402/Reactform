@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -9,6 +9,7 @@ import { userService, alertService } from '../_services';
 function AddEdit({ history, match }) {
   const { id } = match.params;
   const isAddMode = !id;
+  const [village, setVillage] = useState([]);
 
   // form validation rules
   const validationSchema = Yup.object().shape({
@@ -69,6 +70,12 @@ function AddEdit({ history, match }) {
         const fields = ['firstname','midname', 'lastname', 'sex', 'identification', 'age'];
         fields.forEach((field) => setValue(field, user[field]));
       });
+
+      userService.getVillage().then((villageRes) => {
+        console.log(villageRes);
+        setVillage(villageRes)
+      })
+
     }
   }, []);
 
