@@ -71,9 +71,9 @@ function AddEdit({ history, match }) {
         fields.forEach((field) => setValue(field, user[field]));
       });
 
-      userService.getVillage().then((villageRes) => {
-        console.log(villageRes);
-        setVillage(villageRes)
+      userService.getVillage().then((res) => {
+        const villages = res.villages.map(villageIndex => villageIndex.name);
+        setVillage(...villages)
       })
 
     }
@@ -187,8 +187,7 @@ function AddEdit({ history, match }) {
             className={`form-control ${errors.village ? 'is-invalid' : ''}`}
           >
             <option value=""></option>
-            <option value="1">1</option>
-            <option value="2">2</option>
+            {village.map(villageName => <option value="1">{`${villageName}`}</option>)}
           </select>
           <div className="invalid-feedback">{errors.village?.message}</div>
         </div>
