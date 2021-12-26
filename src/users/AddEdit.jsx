@@ -9,7 +9,7 @@ import { userService, alertService } from '../_services';
 function AddEdit({ history, match }) {
   const { id } = match.params;
   const isAddMode = !id;
-  const [village, setVillage] = useState([]);
+  const [villageState, setVillage] = useState([]);
 
   // form validation rules
   const validationSchema = Yup.object().shape({
@@ -70,13 +70,12 @@ function AddEdit({ history, match }) {
         const fields = ['firstname','midname', 'lastname', 'sex', 'identification', 'age'];
         fields.forEach((field) => setValue(field, user[field]));
       });
-
-      userService.getVillage().then((res) => {
-        const villages = res.villages.map(villageIndex => villageIndex.name);
-        setVillage(...villages)
-      })
-
     }
+
+    userService.getVillage().then((res) => {
+      const villages = res.villages.map(villageIndex => villageIndex.name);
+      setVillage([...villages])
+    })
   }, []);
 
   return (
@@ -187,7 +186,9 @@ function AddEdit({ history, match }) {
             className={`form-control ${errors.village ? 'is-invalid' : ''}`}
           >
             <option value=""></option>
-            {village.map(villageName => <option value="1">{`${villageName}`}</option>)}
+            {villageState.length > 0 ? 
+            villageState.map(villageIndex => <option>{`${villageIndex}`}</option>) :
+            <></>}
           </select>
           <div className="invalid-feedback">{errors.village?.message}</div>
         </div>
